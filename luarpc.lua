@@ -254,8 +254,8 @@ end
 --]]
 function packArgument(method, package, ...)
 	local data = {...}
-	--local argument = method .. '\n' .. #data
-	local argument = method
+	local argument = method .. '\n' .. #data
+	--local argument = method
 
 	local errorNArg = true
 
