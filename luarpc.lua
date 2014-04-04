@@ -78,6 +78,10 @@ end
 function createServant(object, arq_interface) 
 	local port = RPCServer.port + #servers
 
+	if interface == nil then
+		interface = parseInterface(arq_interface)
+	end
+
 	-- Create a socket and bind it to the host, and port
 	local server = assert(socket.bind(RPCServer.host, port))
 	table.insert(servers, server)
@@ -115,12 +119,14 @@ function waitIncoming()
 	    		break
 	    	end
 
-	    	local n_args, err = client:receive()
+	    	--[[local n_args, err = client:receive()
 
-	    	--[[if err then
+	    	if err then
 	    		client:send("___ERRORPC: The number of arguments is not correct\n")
 	    		break
 	    	end]]
+	    	
+	    	n_args = interface[method][1].args.length
 
 	    	local params = {}
 	    	local result = {}
@@ -194,8 +200,10 @@ function parseInterface(arq_interface, client)
 	functions = string.gmatch(interface, "%s*interface%s*%w+%s*{(.+)}%s*;$")
 
 	for r_type, name, params in string.gmatch(functions(), "%s*(%a+)%s*(%w+)%s*%((.-)%)%s*;") do
-		if package[name] == nil then
+		if package[name] == nil and client ~= nil then
 			package[name] = {client = client}
+		elseif package[name] == nil then
+			package[name] = {}
 		end
 
 		local temp = 
@@ -254,8 +262,8 @@ end
 --]]
 function packArgument(method, package, ...)
 	local data = {...}
-	local argument = method .. '\n' .. #data
-	--local argument = method
+	--local argument = method .. '\n' .. #data
+	local argument = method
 
 	local errorNArg = true
 

@@ -9,8 +9,5 @@ print(r, s)
 local t = p2.boo(10)
 print(t)
 
-local w = p2.foo()
-print(w)
-
 local q = p1.boo(10)
 print(q)
