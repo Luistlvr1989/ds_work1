@@ -139,13 +139,17 @@ function waitIncoming()
 	    	result = {objects[server][method](unpack(params))}
 
 	    	if not err then
-	    		local temp = #result
+	    		--[[local temp = #result
 
 	    		for _, v in ipairs(result) do
 	    			temp = temp .. '\n' .. v
 	    		end
 
-				client:send(temp .. '\n')
+				client:send(temp .. '\n')]]
+
+				for _, v in ipairs(result) do
+	    			client:send(v .. '\n')
+	    		end
 			else
 				client:send("___ERRORPC: " .. err)
 			end
@@ -212,8 +216,9 @@ function parseInterface(arq_interface, client)
 			args   = {length = 0}
 		}
 
-		if r_type ~= void then
+		if r_type ~= "void" then
 			table.insert(temp.result, r_type)
+			temp.result.length = temp.result.length + 1
 		end
 
 		for p_dir, p_type, p_name in string.gmatch(params, "%s*(%a+)%s*(%a+)%s*(%w+)") do
@@ -341,7 +346,8 @@ function transmit(t, package)
 
   	client:send(package .. "\n")
 
-  	local n_results, err = client:receive()
+  	local n_results = t[1].result.length
+  	--local n_results, err = client:receive()
 
   	if err then
   		return "error", "Problem at the receiving"
