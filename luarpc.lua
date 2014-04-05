@@ -54,6 +54,26 @@ function tprint(tbl, indent)
 end
 
 --[[
+-- Handle the break line '\n'
+-- @param text		A string
+-- @return 			A string that substitute the line breaks with '\\n'
+--]]
+function parseMultiLine(text)
+	local message, n = string.gsub(text, "\n", "\\n")
+	return message
+end
+
+--[[
+-- Handle the break line '\n'
+-- @param text		A string
+-- @return 			A string that substitute the '\\n' with a breakline
+--]]
+function unParseMultiLine(text)
+	local message, n = string.gsub(text, "\\n", "\n")
+	return message
+end
+
+--[[
 -- Writes to a file some important information if LOGGER is true
 -- @param tableArg	An empty table or with elements
 -- @param value		A value to be added to the table
@@ -133,6 +153,9 @@ function waitIncoming()
 
 	    	for j = 1, n_args do
 	    		local param, err = client:receive()
+
+				param = unParseMultiLine(param)
+
 	    		table.insert(params, param)
 	    	end
 
@@ -148,6 +171,10 @@ function waitIncoming()
 				client:send(temp .. '\n')]]
 
 				for _, v in ipairs(result) do
+					if type(v) == "string" then
+						v = parseMultiLine(v)
+					end
+
 	    			client:send(v .. '\n')
 	    		end
 			else
@@ -304,6 +331,10 @@ function packArgument(method, package, ...)
 			end
 			correctArg[_i] = add2table(correctArg[_i], correct)
 		end
+
+		if type(v) == "string" then
+			v = parseMultiLine(v)
+		end
 		
 		argument = argument .. '\n' .. v 
 	end
@@ -357,6 +388,7 @@ function transmit(t, package)
 
   	for i = 1, n_results do 
   		local result, err = client:receive()
+  		result = unParseMultiLine(result)
   		table.insert(results, result)
   	end
 

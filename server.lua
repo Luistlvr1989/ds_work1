@@ -17,8 +17,8 @@ myobj2 = {
 			return "tchau"
 		end,
 	too = 
-		function (a, b, s)
-			return a - b, "tchau"
+		function (s)
+			return s .. "tchau"
 		end,
 	boo = 
 		function (n)

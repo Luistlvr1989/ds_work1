@@ -3,4 +3,5 @@ interface minhaInt {
   double foo (in double a, in double b, out string c);
   /*void foo (void);*/
   void boo (inout double a);
+  void too (inout string a);
 };

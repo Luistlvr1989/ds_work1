@@ -11,3 +11,6 @@ print(t)
 
 local q = p1.boo(10)
 print(q)
+
+local q = p2.too("Hello world\nHow are you\n")
+print(q)
