@@ -1,4 +1,3 @@
-<h1><a name="github-markup" class="anchor" href="#github-markup"><span class="octicon octicon-link"></span></a>GitHub Markup</h1>
+<h1>LUA RPC Library</h1>
 
-<p>We use this library on GitHub when rendering your README or any other
-rich text file.</p>
+<p>Implementation of a library for RPC with lua and lua sockets.</p>
