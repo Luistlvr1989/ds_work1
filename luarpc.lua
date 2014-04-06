@@ -74,7 +74,7 @@ function unParseMultiLine(text)
 end
 
 --[[
--- Writes to a file some important information if LOGGER is true
+-- Add a value to a table, if the table doesn't exist, then it's created
 -- @param tableArg	An empty table or with elements
 -- @param value		A value to be added to the table
 -- @return 			A table with the element value inserted
@@ -146,7 +146,7 @@ function waitIncoming()
 	    		break
 	    	end]]
 	    	
-	    	n_args = interface[method][1].args.length
+	    	local n_args = interface[method][1].args.length
 
 	    	local params = {}
 	    	local result = {}
