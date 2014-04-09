@@ -15,6 +15,13 @@ RPCServer =
 RPC = {}
 servers = {}
 objects = {}
+
+Defaults = 
+{
+	char = "a",
+	string = "",
+	double = 0
+}
 -- End Globals --
 
 --[[
@@ -181,7 +188,7 @@ function waitIncoming()
 				client:send("___ERRORPC: " .. err)
 			end
 
-			--client:close()
+			client:close()
 	    end
   	end
 end
