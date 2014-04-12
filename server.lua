@@ -13,12 +13,8 @@ myobj1 = {
 
 myobj2 = { 
 	foo = 
-		function ()
-			return "tchau"
-		end,
-	too = 
-		function (s)
-			return s .. "tchau"
+		function (a, b, s)
+			return a + b, "tchau"
 		end,
 	boo = 
 		function (n)

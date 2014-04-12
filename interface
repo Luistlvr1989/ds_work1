@@ -1,7 +1,20 @@
-/* Interface for functions foo and boo */
-interface minhaInt {
-  double foo (in double a, in double b, out string c);
-  /*void foo (void);*/
-  void boo (inout double a);
-  void too (inout string a);
-};
+interface { name = minhaInt,
+  methods = {
+    foo = {
+      resulttype = "double",
+      args = {{direction = "in",
+              type = "double"},
+              {direction = "in",
+              type = "double"},
+              {direction = "out",
+              type = "string"},
+      }
+    },
+    boo = {
+      resulttype = "void",
+      args = {{direction = "inout",
+              type = "string"},
+      }
+    }
+  }
+}
