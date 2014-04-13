@@ -1,5 +1,16 @@
 luarpc = require("luarpc")
 
+function string.totable(s)
+	local temp = string.gmatch(s, "{(.-)}")
+	local r_table = {}
+
+	for value in string.gmatch(temp(), "([^,]+)") do
+		table.insert(r_table, value)
+	end
+
+	return r_table
+end
+
 myobj1 = { 
 	foo = 
 		function (a, b, s)
@@ -7,7 +18,12 @@ myobj1 = {
 		end,
 	boo = 
 		function (n)
-			return n
+			local t = string.totable(n)
+			return t[1]
+		end,
+	too = 
+		function (s)
+			return s .. " hello"
 		end
 }
 
@@ -18,7 +34,12 @@ myobj2 = {
 		end,
 	boo = 
 		function (n)
-			return 1
+			local t = string.totable(n)
+			return t[2]
+		end,
+	too = 
+		function (s)
+			return s .. " bye"
 		end
 }
 

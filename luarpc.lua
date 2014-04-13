@@ -7,6 +7,7 @@ ARG_ERROR = "Couldn't transform the arguments"
 SND_ERROR = "Couldn't send the data to the server"
 RCB_ERROR = "Couldn't receive the data from the server"
 FTN_ERROR = "The function doesn't exist"
+MTD_ERROR = "Couldn't receive method from client"
 PRM_ERROR = "Couldn't receive argument from client"
 RSP_ERROR = "Couldn't respond to the client"
 -- End Error Messages
@@ -21,7 +22,7 @@ RPCServer =
 {
   host = "*",
   port = 3000,
-  max_clients = 5,
+  max_clients = 3,
   servertimeout = 5,
   clienttimeout = 5,
   receivetimeout = 1,
@@ -185,7 +186,7 @@ end
 -- @param arguments The arguments to be send
 -- @return 			The results that the server sent
 --]]
-function transmitPackage(t, method, arguments)
+function transmitPackage(t, method, arguments, resend)
 	local ip   = t.client.ip or RPCServer.host
 	local port = t.client.port or RPCServer.port
 
@@ -198,15 +199,22 @@ function transmitPackage(t, method, arguments)
 	local client
 	if t.client.socket == nil then
 		client = assert(socket.connect(ip, port))
-  		client:settimeout(RPCServer.clienttimeout)
+		client:setoption("tcp-nodelay", true)
+  		--client:settimeout(RPCServer.clienttimeout)
   		t.client.socket = client
   	else
   		client = t.client.socket
 	end
-	
+
   	local _, err = client:send(package .. "\n")
-	
-  	if err then
+
+  	if err == "closed" and not resend then
+		t.client.socket = nil
+		client:close()
+
+		return transmitPackage(t, method, arguments, true)
+  	elseif err then
+  		t.client.socket = nil
   		client:close()
   		return exception(SND_ERROR)
   	end
@@ -214,9 +222,16 @@ function transmitPackage(t, method, arguments)
 	local results = {}
   	for i = 1, t.result.length do 
   		local result, err = client:receive()
-  		
-  		if err then
+
+  		if err == "closed" and not resend then
+  			t.client.socket = nil
   			client:close()
+
+  			return transmitPackage(t, method, arguments, true)
+  		elseif err then
+  			t.client.socket = nil
+  			client:close()
+
   			return exception(RCB_ERROR)
   		end
 
@@ -228,8 +243,8 @@ function transmitPackage(t, method, arguments)
   	end
 
   	if RPCServer.connection_type == CLSE_CONNS then
-  		client:close()
   		t.client.socket = nil
+  		client:close()
   	end
 
   	return unpack(results)
@@ -319,6 +334,12 @@ end
 --]]
 function handleClient(client, method) 
 	local server = proxy[client]
+
+	if objects[server][method] == nil then
+		local err, msg = exception(FTN_ERROR, true)
+		client:send(err .. "\n" .. msg .. "\n")
+		return err
+	end
 	
 	local params  = {}
 	local results = {}
@@ -327,11 +348,11 @@ function handleClient(client, method)
 	local r_types = interfaces[server][method].result
 
 	for i = 1, a_types.length do
-
 		local param, err = client:receive()
 
 		if err then
-			client:send(exception(PRM_ERROR, true))
+			local err, msg = exception(PRM_ERROR, true)
+			client:send(err .. "\n" .. msg .. "\n")
 			break
 		end
 
@@ -375,10 +396,11 @@ function handleClient(client, method)
 	end]]
 
 	local _, err = client:send(response)
-
+	
   	if err then
-  		client:send(exception(RSP_ERROR, true))
-  		return RSP_ERROR
+  		local err, msg = exception(RSP_ERROR, true)
+  		client:send(err .. "\n" .. msg .. "\n")
+  		return err
   	end
 end
 
@@ -419,13 +441,13 @@ function waitIncoming()
   		local readers, writers = socket.select(servers, clients)
   		
   		for i, server in ipairs(readers) do
-  			
   			if #clients >= RPCServer.max_clients then
   				local r_client = table.remove(clients, 1)
+  				proxy[r_client] = nil
   				r_client:close()
   			end
   			
-  			server:settimeout(RPCServer.servertimeout)
+  			--server:settimeout(RPCServer.servertimeout)
 	    	local client = server:accept()
 	    	proxy[client] = server
 	    	
@@ -439,12 +461,13 @@ function waitIncoming()
 
     		-- Receive the method
 			local method, err = client:receive()
-
-			if err or objects[server][method] == nil then
-				client:send(exception(FTN_ERROR, true))
+			
+			if err then
+				local err, msg = exception(MTD_ERROR, true)
+				client:send(err .. "\n" .. msg .. "\n")
 				break
 			end
-
+			
     		-- Handle Clients
     		handleClient(client, method)
 

@@ -11,10 +11,16 @@ interface { name = minhaInt,
       }
     },
     boo = {
-      resulttype = "void",
-      args = {{direction = "inout",
+      resulttype = "double",
+      args = {{direction = "in",
               type = "string"},
       }
-    }
+    },
+    too = {
+      resulttype = "string",
+      args = {{direction = "in",
+              type = "string"},
+      }
+    },
   }
 }
